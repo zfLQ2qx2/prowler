@@ -13,6 +13,7 @@ CHECK_TITLE_check11="[check11] Avoid the use of the root account (Scored)"
 CHECK_SCORED_check11="SCORED"
 CHECK_TYPE_check11="LEVEL1"
 CHECK_ALTERNATE_check101="check11"
+CHECK_SERVICE_check11="iam"
 
 check11(){
   # "Avoid the use of the root account (Scored)."

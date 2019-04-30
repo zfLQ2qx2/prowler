@@ -55,13 +55,15 @@ USAGE:
   Options:
       -p <profile>        specify your AWS profile to use (i.e.: default)
       -r <region>         specify an AWS region to direct API requests to
-                            (i.e.: us-east-1), all regions are checked anyway if the check requires it
+                            (i.e.: "us-east-1"), all regions are checked anyway if the check requires it
       -c <check_id>       specify one or multiple check ids separated by commas, to see all available checks use "-l" option
                             (i.e.: "check11" for check 1.1 or "extra71,extra72" for extra check 71 and extra check 72)
       -g <group_id>       specify a group of checks by id, to see all available group of checks use "-L"
                             (i.e.: "check3" for entire section 3, "level1" for CIS Level 1 Profile Definitions or "forensics-ready")
+      -s <service>        specify an AWS service to run checks against
+                            (i.e.: "ec2" or "iam" or "s3")
       -f <filterregion>   specify an AWS region to run checks against
-                            (i.e.: us-west-1)
+                            (i.e.: "us-west-1")
       -m <maxitems>       specify the maximum number of items to return for long-running requests (default: 100)
       -M <mode>           output mode: text (default), mono, json, csv (separator is ","; data is on stdout; progress on stderr)
       -k                  keep the credential report
@@ -70,16 +72,17 @@ USAGE:
       -l                  list all available checks only (does not perform any check)
       -L                  list all groups (does not perform any check)
       -e                  exclude group extras
-      -E                  execute all tests except a list of specified checks separated by comma (i.e. check21,check31)
+      -E                  execute all tests except a list of specified checks separated by comma 
+                            (i.e.: check21,check31)
       -b                  do not print Prowler banner
       -V                  show version number & exit
-      -s                  show scoring report
+      -R                  show scoring report
       -h                  this help
   "
   exit
 }
 
-while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs" OPTION; do
+while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs:" OPTION; do
    case $OPTION in
      h )
         usage
@@ -107,6 +110,9 @@ while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs" OPTION; do
      g )
         GROUP_ID_READ=$OPTARG
         ;;
+     s )
+        SERVICE_ID=$OPTARG
+        ;;
      f )
         FILTERREGION=$OPTARG
         ;;
@@ -133,8 +139,8 @@ while getopts ":hlLkp:r:c:g:f:m:M:E:enbVs" OPTION; do
         EXITCODE=0
         exit $EXITCODE
         ;;
-     s )
-        SCORING=1
+     R )
+        SCORING_REPORT=1
         ;;
      : )
         echo ""
@@ -189,6 +195,7 @@ show_check_title() {
   local check_title=CHECK_TITLE_$1
   local check_scored=CHECK_SCORED_$1
   local check_type=CHECK_TYPE_$1
+  local check_service=CHECK_SERVICE_$1
   textTitle "${!check_id}" "${!check_title}" "${!check_scored}" "${!check_type}"
 }
 
@@ -266,6 +273,21 @@ execute_all() {
     if [ "${GROUP_RUN_BY_DEFAULT[$i]}" == "Y" ]; then
 		  execute_group $i
     fi
+	done
+}
+
+# Function to execute checks by service
+execute_service_by_id() {
+  #CHECK_SERVICE_check11="iam"
+  echo "${SERVICE_ID[$1]}"
+  if [ "${SERVICE_ID[$1]}" == "iam" ]; then
+    genCredReport
+    saveReport
+  fi
+	IFS=',' read -ra CHECKS <<< ${CHECK_SERVICE[$1]}
+  echo "${CHECKS[@]}"
+	for i in ${CHECKS[@]}; do
+    echo $i
 	done
 }
 
@@ -362,6 +384,13 @@ if [[ $CHECK_ID ]];then
   for CHECK in "${CHECKS[@]}"; do
     execute_check $CHECK
   done
+  cleanTemp
+  exit $EXITCODE
+fi
+
+# Execute checks of the same service
+if [[ $SERVICE_ID ]];then
+  execute_service_by_id $SERVICE_ID
   cleanTemp
   exit $EXITCODE
 fi
