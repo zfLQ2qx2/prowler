@@ -14,13 +14,16 @@
 # Output formatting functions
 textPass(){
   PASS_COUNTER=$((PASS_COUNTER+1))
+  if [[ $3 ]]; then
+      RESOURCEID=$3
+  fi 
   if [[ "$MODE" == "csv" ]]; then
     if [[ $2 ]]; then
       REPREGION=$2
     else
       REPREGION=$REGION
     fi
-    echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}PASS${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1${SEP}$3"
+    echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}PASS${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1${SEP}$RESOURCEID"
   elif [[ "$MODE" == "json" ]]; then
     if [[ $2 ]]; then
       REPREGION=$2
@@ -36,6 +39,7 @@ textPass(){
     --arg ITEM_LEVEL "$ITEM_LEVEL" \
     --arg TITLE_ID "$TITLE_ID" \
     --arg REPREGION "$REPREGION" \
+    --arg RESOURCEID "$RESOURCEID" \
     --arg TIMESTAMP $(date -u +"%Y-%m-%dT%H:%M:%SZ") \
     -n '{
       "Profile": $PROFILE,
@@ -47,6 +51,7 @@ textPass(){
       "Level": $ITEM_LEVEL,
       "Control ID": $TITLE_ID,
       "Region": $REPREGION,
+      "ResourceID": $RESOURCEID,
       "Timestamp": $TIMESTAMP,
     }'
   else
@@ -55,13 +60,16 @@ textPass(){
 }
 
 textInfo(){
+  if [[ $3 ]]; then
+      RESOURCEID=$3
+  fi
   if [[ "$MODE" == "csv" ]]; then
     if [[ $2 ]]; then
       REPREGION=$2
     else
       REPREGION=$REGION
     fi
-    echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}INFO${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1${SEP}$3"
+    echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}INFO${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1${SEP}$RESOURCEID"
   elif [[ "$MODE" == "json" ]]; then
     if [[ $2 ]]; then
       REPREGION=$2
@@ -77,6 +85,7 @@ textInfo(){
     --arg ITEM_LEVEL "$ITEM_LEVEL" \
     --arg TITLE_ID "$TITLE_ID" \
     --arg REPREGION "$REPREGION" \
+    --arg RESOURCEID "$RESOURCEID" \
     --arg TIMESTAMP $(date -u +"%Y-%m-%dT%H:%M:%SZ") \
     -n '{
       "Profile": $PROFILE,
@@ -88,6 +97,7 @@ textInfo(){
       "Level": $ITEM_LEVEL,
       "Control ID": $TITLE_ID,
       "Region": $REPREGION,
+      "ResourceID": $RESOURCEID,
       "Timestamp": $TIMESTAMP,
     }'
   else
@@ -96,6 +106,9 @@ textInfo(){
 }
 
 textFail(){
+  if [[ $3 ]]; then
+      RESOURCEID=$3
+  fi
   FAIL_COUNTER=$((FAIL_COUNTER+1))
   EXITCODE=3
   if [[ "$MODE" == "csv" ]]; then
@@ -104,7 +117,7 @@ textFail(){
     else
       REPREGION=$REGION
     fi
-    echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}FAIL${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1${SEP}$3"
+    echo "$PROFILE${SEP}$ACCOUNT_NUM${SEP}$REPREGION${SEP}$TITLE_ID${SEP}FAIL${SEP}$ITEM_SCORED${SEP}$ITEM_LEVEL${SEP}$TITLE_TEXT${SEP}$1${SEP}$RESOURCEID"
   elif [[ "$MODE" == "json" ]]; then
     if [[ $2 ]]; then
       REPREGION=$2
@@ -120,6 +133,7 @@ textFail(){
     --arg ITEM_LEVEL "$ITEM_LEVEL" \
     --arg TITLE_ID "$TITLE_ID" \
     --arg REPREGION "$REPREGION" \
+    --arg RESOURCEID "$RESOURCEID" \
     --arg TIMESTAMP $(date -u +"%Y-%m-%dT%H:%M:%SZ") \
     -n '{
       "Profile": $PROFILE,
@@ -131,6 +145,7 @@ textFail(){
       "Level": $ITEM_LEVEL,
       "Control ID": $TITLE_ID,
       "Region": $REPREGION,
+      "ResourceID": $RESOURCEID,
       "Timestamp": $TIMESTAMP,
     }'
   else
