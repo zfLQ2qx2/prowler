@@ -16,7 +16,8 @@ CHECK_SCORED_extra73="NOT_SCORED"
 CHECK_TYPE_extra73="EXTRA"
 CHECK_ALTERNATE_extra703="extra73"
 CHECK_ALTERNATE_check73="extra73"
-CHECK_ALTERNATE_check703="extra73"
+# Resource.Type in Cloudformation format. https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-template-resource-type-ref.html
+RESOURCE_TYPE_extra73="AWS::S3::Bucket"
 
 # Improved and simplified check on Nov 18th 2018 due to a new bucket attribute
 # called PolicyStatus, not available in all regions yet.
@@ -56,7 +57,7 @@ extra73(){
     # Check Explicit Deny and Avoid Error
     CHEK_FOR_EXPLICIT_DENY=$($AWSCLI s3api get-bucket-acl $PROFILE_OPT --region $BUCKET_LOCATION --bucket $bucket --output text 2>&1)
     if [[ $(echo "$CHEK_FOR_EXPLICIT_DENY" | grep AccessDenied) ]] ; then
-      textPass "$BUCKET_LOCATION: bucket have an explicit Deny. Not possible to get ACL." "$BUCKET_LOCATION"
+      textPass "$BUCKET_LOCATION: bucket have an explicit Deny. Not possible to get ACL." "$BUCKET_LOCATION" "$bucket" "$RESOURCE_TYPE_extra73"
     else
       # check if AllUsers is in the ACL as Grantee
       CHECK_BUCKET_ALLUSERS_ACL=$($AWSCLI s3api get-bucket-acl $PROFILE_OPT --region $BUCKET_LOCATION --bucket $bucket --query "Grants[?Grantee.URI == 'http://acs.amazonaws.com/groups/global/AllUsers']" --output text |grep -v GRANTEE)
@@ -71,16 +72,16 @@ extra73(){
       CHECK_BUCKET_ALLUSERS_POLICY=$(cat $TEMP_POLICY_FILE | sed -e 's/[{}]/''/g' | awk -v k="text" '{n=split($0,a,","); for (i=1; i<=n; i++) print a[i]}'|awk '/Principal/ && !skip { print } { skip = /Deny/} '|grep ^\"Principal|grep \*)
       if [[ $CHECK_BUCKET_ALLUSERS_ACL || $CHECK_BUCKET_AUTHUSERS_ACL || $CHECK_BUCKET_ALLUSERS_POLICY ]];then
         if [[ $CHECK_BUCKET_ALLUSERS_ACL ]];then
-          textFail "$BUCKET_LOCATION: $bucket bucket is open to the Internet (Everyone) with permissions: $CHECK_BUCKET_ALLUSERS_ACL_SINGLE_LINE" "$BUCKET_LOCATION"
+          textFail "$BUCKET_LOCATION: $bucket bucket is open to the Internet (Everyone) with permissions: $CHECK_BUCKET_ALLUSERS_ACL_SINGLE_LINE" "$BUCKET_LOCATION" "$bucket" "$RESOURCE_TYPE_extra73"
         fi
         if [[ $CHECK_BUCKET_AUTHUSERS_ACL ]];then
-          textFail "$BUCKET_LOCATION: $bucket bucket is open to Authenticated users (Any AWS user) with permissions: $CHECK_BUCKET_AUTHUSERS_ACL_SINGLE_LINE" "$BUCKET_LOCATION"
+          textFail "$BUCKET_LOCATION: $bucket bucket is open to Authenticated users (Any AWS user) with permissions: $CHECK_BUCKET_AUTHUSERS_ACL_SINGLE_LINE" "$BUCKET_LOCATION" "$bucket" "$RESOURCE_TYPE_extra73"
         fi
         if [[ $CHECK_BUCKET_ALLUSERS_POLICY ]];then
-          textFail "$BUCKET_LOCATION: $bucket bucket policy \"may\" allow Anonymous users to perform actions (Principal: \"*\")" "$BUCKET_LOCATION"
+          textFail "$BUCKET_LOCATION: $bucket bucket policy \"may\" allow Anonymous users to perform actions (Principal: \"*\")" "$BUCKET_LOCATION" "$bucket" "$RESOURCE_TYPE_extra73"
         fi
       else
-        textPass "$BUCKET_LOCATION: $bucket bucket is not open" "$BUCKET_LOCATION"
+        textPass "$BUCKET_LOCATION: $bucket bucket is not open" "$BUCKET_LOCATION" "$bucket" "$RESOURCE_TYPE_extra73"
       fi
       rm -fr $TEMP_POLICY_FILE
     fi
